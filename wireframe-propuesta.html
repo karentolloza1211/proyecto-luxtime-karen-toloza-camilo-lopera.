@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LuxTime — Propuesta de Wireframe</title>
+<style>
+
+  /* =========================================================
+     TOKENS — Estética "plano técnico de relojería" (blueprint)
+     Solo para esta fase de wireframe. La paleta de marca real
+     (lujo/dorado/negro) se define en el Paso 2.
+     ========================================================= */
+  :root{
+    --bg:        #0d1b2a;
+    --bg-panel:  #10233a;
+    --line:      #4f8fc0;
+    --line-soft: rgba(127,178,213,.28);
+    --text:      #d7e6f5;
+    --text-dim:  #8fa8bf;
+    --accent:    #c9a24b; /* único acento: oro/latón, reservado para lo interactivo/real */
+    --danger:    #d9534f;
+    --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.5;
+    padding-bottom:4rem;
+  }
+
+  h1,h2,h3{ font-family:var(--mono); font-weight:600; letter-spacing:.02em; }
+
+  a{ color:var(--accent); }
+
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  /* =========================================================
+     Indicador de viewport en vivo (100% CSS, sin JS)
+     ========================================================= */
+  .viewport-indicator{
+    position:fixed; top:.75rem; right:.75rem; z-index:50;
+    font-family:var(--mono); font-size:.7rem; letter-spacing:.05em;
+    background:var(--bg-panel); border:1px solid var(--accent);
+    padding:.4rem .6rem; border-radius:2px;
+  }
+  .vp{ display:none; }
+  .vp-mobile{ display:inline; }
+  @media (min-width:768px){
+    .vp-mobile{ display:none; } .vp-tablet{ display:inline; }
+  }
+  @media (min-width:1024px){
+    .vp-tablet{ display:none; } .vp-desktop{ display:inline; }
+  }
+
+  /* =========================================================
+     Intro + índice
+     ========================================================= */
+  .wf-intro{ max-width:760px; margin:3rem auto 1.5rem; padding:0 1.25rem; }
+  .wf-intro h1{ font-size:1.3rem; margin-bottom:.75rem; }
+  .wf-intro p{ color:var(--text-dim); font-size:.9rem; }
+  .wf-intro .leyenda{ margin-top:1rem; font-size:.78rem; color:var(--text-dim); }
+  .leyenda span{ color:var(--accent); font-family:var(--mono); }
+
+  .wf-toc{
+    max-width:760px; margin:0 auto 2.5rem; padding:0 1.25rem;
+    display:flex; flex-wrap:wrap; gap:.75rem;
+  }
+  .wf-toc a{
+    font-family:var(--mono); font-size:.75rem; text-decoration:none;
+    border:1px dashed var(--line-soft); padding:.4rem .7rem; color:var(--text);
+  }
+  .wf-toc a:hover{ border-color:var(--accent); color:var(--accent); }
+
+  /* =========================================================
+     Contenedor de cada plantilla
+     ========================================================= */
+  .wf-page{ max-width:960px; margin:0 auto 3.5rem; padding:0 1.25rem; }
+  .wf-page-title{
+    font-size:.95rem; text-transform:uppercase; color:var(--accent);
+    border-bottom:1px solid var(--line-soft); padding-bottom:.6rem; margin-bottom:1.25rem;
+  }
+  .wf-frame{ display:flex; flex-direction:column; gap:1rem; }
+
+  /* Bloque base: todo lo "por construir" luce igual (líneas discontinuas) */
+  .wf-block{
+    position:relative;
+    border:1px dashed var(--line);
+    background:rgba(127,178,213,.05);
+    min-height:70px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:var(--mono); font-size:.75rem; color:var(--text-dim);
+    padding:1rem;
+  }
+  /* marcas de esquina tipo "plano técnico" — la única firma visual del documento */
+  .wf-block::before,.wf-block::after{ content:""; position:absolute; width:9px; height:9px; }
+  .wf-block::before{ top:-1px; left:-1px; border-top:2px solid var(--accent); border-left:2px solid var(--accent); }
+  .wf-block::after{ bottom:-1px; right:-1px; border-bottom:2px solid var(--accent); border-right:2px solid var(--accent); }
+
+  .wf-tag{
+    position:absolute; top:-.6rem; left:.6rem;
+    background:var(--bg); border:1px solid var(--line);
+    font-size:.62rem; letter-spacing:.06em; text-transform:uppercase;
+    padding:.1rem .4rem; color:var(--text);
+  }
+
+  /* Bloques que SÍ funcionan ya en CSS puro dentro de este wireframe */
+  .wf-block.is-live{ color:var(--text); border-style:solid; }
+  .wf-live-note{ font-size:.62rem; color:var(--accent); display:block; margin-top:.3rem; }
+
+  /* =========================================================
+     Header / Nav — Flexbox
+     ========================================================= */
+  .wf-header{ min-height:auto; padding:.75rem; display:block; }
+  .wf-header-row{ display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+  .wf-logo{ min-height:auto; padding:.5rem 1rem; flex:0 0 auto; }
+  .wf-nav-items{ display:none; min-height:auto; padding:.5rem 1rem; flex:1; }
+  .wf-menu-icon{ min-height:auto; padding:.5rem .8rem; }
+  @media (min-width:768px){
+    .wf-nav-items{ display:flex; }
+    .wf-menu-icon{ display:none; }
+  }
+
+  /* =========================================================
+     Grids reutilizables — CSS Grid
+     ========================================================= */
+  .wf-grid{ display:grid; gap:1rem; }
+  .wf-grid-6{ grid-template-columns:1fr; }
+  @media (min-width:768px){ .wf-grid-6{ grid-template-columns:repeat(2,1fr); } }
+  @media (min-width:1024px){ .wf-grid-6{ grid-template-columns:repeat(3,1fr); } }
+
+  .wf-grid-20{ grid-template-columns:repeat(2,1fr); }
+  @media (min-width:768px){ .wf-grid-20{ grid-template-columns:repeat(3,1fr); } }
+  @media (min-width:1024px){ .wf-grid-20{ grid-template-columns:repeat(4,1fr); } }
+
+  .wf-grid-2{ grid-template-columns:1fr; }
+  @media (min-width:768px){ .wf-grid-2{ grid-template-columns:repeat(2,1fr); } }
+
+  .wf-card{ min-height:140px; flex-direction:column; gap:.3rem; }
+  .wf-card small{ color:var(--text-dim); }
+
+  /* =========================================================
+     HERO — banner rotativo (demo real con @keyframes)
+     ========================================================= */
+  .wf-hero{ min-height:220px; padding:0; overflow:hidden; }
+  .wf-hero-slides{ position:relative; width:100%; height:220px; }
+  .wf-hero-slides .slide{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:.75rem; opacity:0;
+    animation:heroFade 9s infinite;
+    border:1px dashed var(--line-soft);
+  }
+  .wf-hero-slides .slide:nth-child(1){ background:rgba(201,162,75,.12); animation-delay:0s; }
+  .wf-hero-slides .slide:nth-child(2){ background:rgba(79,143,192,.12); animation-delay:3s; }
+  .wf-hero-slides .slide:nth-child(3){ background:rgba(127,178,213,.10); animation-delay:6s; }
+  @keyframes heroFade{
+    0%{ opacity:0; } 4%{ opacity:1; } 30%{ opacity:1; } 36%{ opacity:0; } 100%{ opacity:0; }
+  }
+  .wf-cta{
+    position:absolute; bottom:.9rem; left:50%; transform:translateX(-50%);
+    background:var(--accent); color:var(--bg); font-family:var(--mono);
+    font-size:.7rem; padding:.5rem 1rem; z-index:2; letter-spacing:.03em;
+  }
+
+  /* =========================================================
+     Timeline resumen (home) e historia completa
+     ========================================================= */
+  .wf-timeline-mini{ font-family:var(--mono); font-size:.75rem; color:var(--text-dim); }
+  .wf-subrow{ display:flex; flex-direction:column; gap:1rem; margin-top:1rem; width:100%; }
+  @media (min-width:768px){ .wf-subrow{ flex-direction:row; } .wf-subrow .wf-block{ flex:1; } }
+
+  .wf-timeline{ position:relative; display:flex; flex-direction:column; gap:1.75rem; padding-left:2.2rem; }
+  .wf-timeline::before{ content:""; position:absolute; left:.55rem; top:0; bottom:0; width:2px; background:var(--line-soft); }
+  .wf-timeline-item .wf-year{ color:var(--accent); font-family:var(--mono); font-weight:700; display:block; margin-bottom:.3rem; }
+  @media (min-width:1024px){
+    .wf-timeline{ padding-left:0; }
+    .wf-timeline::before{ left:50%; transform:translateX(-1px); }
+    .wf-timeline-item{ width:calc(50% - 2rem); }
+    .wf-timeline-item:nth-child(odd){ align-self:flex-start; text-align:right; }
+    .wf-timeline-item:nth-child(even){ align-self:flex-end; text-align:left; }
+  }
+
+  /* =========================================================
+     Mosaico (galería historia) — CSS Grid auto-fit
+     ========================================================= */
+  .wf-mosaic{ display:grid; grid-template-columns:repeat(2,1fr); grid-auto-rows:110px; gap:.7rem; }
+  @media (min-width:768px){ .wf-mosaic{ grid-template-columns:repeat(3,1fr); grid-auto-rows:130px; } }
+  @media (min-width:1024px){ .wf-mosaic{ grid-template-columns:repeat(4,1fr); grid-auto-rows:150px; } }
+  .wf-mosaic .span-2{ grid-column:span 2; }
+  .wf-mosaic .span-row{ grid-row:span 2; }
+
+  /* =========================================================
+     Producto — layout principal + zoom real + carrusel real
+     ========================================================= */
+  .wf-producto-main{ display:grid; grid-template-columns:1fr; gap:1.25rem; }
+  @media (min-width:1024px){ .wf-producto-main{ grid-template-columns:1.1fr .9fr; } }
+
+  .wf-zoom-wrap{ overflow:hidden; min-height:280px; padding:0; }
+  .wf-zoom-demo{
+    width:100%; height:100%; min-height:280px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(201,162,75,.08); transition:transform .4s ease;
+    font-family:var(--mono); font-size:.75rem;
+  }
+  .wf-zoom-wrap:hover .wf-zoom-demo{ transform:scale(1.12); }
+
+  .wf-ficha-tecnica{ flex-direction:column; align-items:flex-start; gap:.4rem; text-align:left; }
+  .wf-ficha-tecnica dl{ display:grid; grid-template-columns:auto 1fr; gap:.3rem 1rem; font-size:.72rem; }
+  .wf-ficha-tecnica dt{ color:var(--accent); }
+
+  .wf-swatches{ display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center; }
+  .wf-swatch{ width:34px; height:34px; border-radius:50%; border:2px dashed var(--line); }
+
+  .wf-carousel{
+    display:flex; gap:1rem; overflow-x:auto; scroll-snap-type:x mandatory;
+    padding-bottom:.6rem; -webkit-overflow-scrolling:touch;
+  }
+  .wf-carousel .wf-block{ flex:0 0 68%; scroll-snap-align:start; min-height:120px; }
+  @media (min-width:768px){ .wf-carousel .wf-block{ flex:0 0 40%; } }
+  @media (min-width:1024px){ .wf-carousel .wf-block{ flex:0 0 23%; } }
+
+  /* =========================================================
+     Catálogo — etiquetas de estado
+     ========================================================= */
+  .wf-estado{ position:absolute; top:-.6rem; right:.6rem; font-size:.6rem; padding:.15rem .4rem; letter-spacing:.04em; }
+  .wf-estado.stock{ background:#2f6f4f; color:#eafff0; border:1px solid #4c9d74; }
+  .wf-estado.agotado{ background:#5a2a2a; color:#ffd9d9; border:1px solid var(--danger); }
+
+  /* =========================================================
+     Contacto — formulario con validación CSS real
+     ========================================================= */
+  .wf-contacto-grid{ display:grid; grid-template-columns:1fr; gap:1.5rem; }
+  @media (min-width:1024px){ .wf-contacto-grid{ grid-template-columns:1.3fr .7fr; } }
+
+  .wf-form{ display:flex; flex-direction:column; gap:1rem; text-align:left; }
+  .wf-field{ display:flex; flex-direction:column; gap:.3rem; }
+  .wf-field label{ font-family:var(--mono); font-size:.72rem; color:var(--text-dim); }
+  .wf-field input, .wf-field textarea{
+    background:var(--bg); border:1px solid var(--line-soft); color:var(--text);
+    padding:.6rem .7rem; font-family:var(--sans); font-size:.85rem;
+  }
+  .wf-field textarea{ resize:vertical; min-height:80px; }
+  .wf-field input:focus, .wf-field textarea:focus{ border-color:var(--accent); }
+  .wf-field input:invalid:not(:placeholder-shown),
+  .wf-field textarea:invalid:not(:placeholder-shown){ border-color:var(--danger); }
+  .wf-field input:user-invalid, .wf-field textarea:user-invalid{ border-color:var(--danger); }
+  .wf-field .hint{ font-size:.68rem; color:var(--text-dim); }
+  .wf-submit{
+    align-self:flex-start; background:var(--accent); color:var(--bg); border:none;
+    font-family:var(--mono); font-size:.75rem; padding:.6rem 1.3rem; cursor:pointer;
+  }
+
+  /* =========================================================
+     Footer — Flexbox (demo funcional, común a todas las páginas)
+     ========================================================= */
+  .wf-footer-ref{ font-size:.7rem; }
+  .wf-footer{
+    max-width:960px; margin:0 auto; padding:1.5rem 1.25rem;
+    border-top:1px solid var(--line-soft);
+    display:flex; flex-direction:column; align-items:center; gap:.6rem; text-align:center;
+  }
+  @media (min-width:768px){
+    .wf-footer{ flex-direction:row; justify-content:space-between; text-align:left; }
+  }
+  .wf-footer .wf-block{ border:none; background:none; min-height:auto; padding:0; }
+  .wf-footer .wf-block::before,.wf-footer .wf-block::after{ display:none; }
+  .wf-footer strong{ color:var(--accent); }
+
+</style>
+</head>
+<body>
+
+  <div class="viewport-indicator">
+    <span class="vp vp-mobile">MOBILE · &lt;768px</span>
+    <span class="vp vp-tablet">TABLET · 768–1024px</span>
+    <span class="vp vp-desktop">DESKTOP · &gt;1024px</span>
+  </div>
+
+  <header class="wf-intro">
+    <h1>LuxTime — Propuesta de Wireframe</h1>
+    <p>Redimensiona la ventana (o revisa en el emulador móvil) para ver los 3 breakpoints en vivo. Cada bloque discontinuo representa contenido que se maquetará en los siguientes pasos.</p>
+    <p class="leyenda">
+      <span>▢ discontinuo</span> = pendiente de maquetar &nbsp;·&nbsp;
+      <span>▢ sólido + esquinas doradas</span> = ya funciona en CSS puro dentro de este documento (hover zoom, carrusel, hero, formulario)
+    </p>
+  </header>
+
+  <nav class="wf-toc">
+    <a href="#wf-home">01 Inicio</a>
+    <a href="#wf-catalogo">02 Catálogo</a>
+    <a href="#wf-producto">03 Detalle de producto</a>
+    <a href="#wf-historia">04 Historia</a>
+    <a href="#wf-contacto">05 Contacto</a>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- 01 · INICIO -->
+  <!-- ============================================================ -->
+  <section class="wf-page" id="wf-home">
+    <h2 class="wf-page-title">01 · Inicio (Home)</h2>
+    <div class="wf-frame">
+
+      <div class="wf-block wf-header">
+        <span class="wf-tag">Header</span>
+        <div class="wf-header-row">
+          <div class="wf-block wf-logo">LOGO</div>
+          <div class="wf-block wf-nav-items">Inicio · Catálogo · Historia · Contacto</div>
+          <div class="wf-block wf-menu-icon">☰</div>
+        </div>
+      </div>
+
+      <div class="wf-block wf-hero is-live">
+        <span class="wf-tag">Hero banner</span>
+        <div class="wf-hero-slides">
+          <div class="slide">Imagen 1 / 3</div>
+          <div class="slide">Imagen 2 / 3</div>
+          <div class="slide">Imagen 3 / 3</div>
+          <div class="wf-cta">Ver colección →</div>
+        </div>
+      </div>
+
+      <div class="wf-grid wf-grid-6">
+        <div class="wf-block wf-card"><span class="wf-tag">Tarjeta</span>Reloj 1<small>Nombre · Precio · ★ Rating · Ver detalles</small></div>
+        <div class="wf-block wf-card">Reloj 2<small>Nombre · Precio · ★ Rating · Ver detalles</small></div>
+        <div class="wf-block wf-card">Reloj 3<small>Nombre · Precio · ★ Rating · Ver detalles</small></div>
+        <div class="wf-block wf-card">Reloj 4<small>Nombre · Precio · ★ Rating · Ver detalles</small></div>
+        <div class="wf-block wf-card">Reloj 5<small>Nombre · Precio · ★ Rating · Ver detalles</small></div>
+        <div class="wf-block wf-card">Reloj 6<small>Nombre · Precio · ★ Rating · Ver detalles</small></div>
+      </div>
+
+      <div class="wf-block wf-historia-resumen">
+        <span class="wf-tag">Historia (resumen)</span>
+        <div>
+          <div class="wf-timeline-mini">1990 — 2005 — 2015 — 2024</div>
+          <div class="wf-subrow">
+            <div class="wf-block">Misión / Visión / Filosofía</div>
+            <div class="wf-block">Reconocimientos</div>
+            <div class="wf-block">Proyección a futuro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-grid wf-grid-2">
+        <div class="wf-block"><span class="wf-tag">Apoyo visual</span>Fotos comparativas + Testimonios</div>
+        <div class="wf-block">Video embed (mock)</div>
+      </div>
+
+      <div class="wf-block wf-footer-ref">Footer (Flexbox) — común a todas las páginas ↓ ver detalle al final</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 02 · CATÁLOGO -->
+  <!-- ============================================================ -->
+  <section class="wf-page" id="wf-catalogo">
+    <h2 class="wf-page-title">02 · Catálogo de relojes</h2>
+    <div class="wf-frame">
+
+      <div class="wf-block wf-header">
+        <span class="wf-tag">Header</span>
+        <div class="wf-header-row">
+          <div class="wf-block wf-logo">LOGO</div>
+          <div class="wf-block wf-nav-items">Inicio · Catálogo · Historia · Contacto</div>
+          <div class="wf-block wf-menu-icon">☰</div>
+        </div>
+      </div>
+
+      <div class="wf-block">Título de sección — "20 modelos disponibles" (sin filtros ni buscador)</div>
+
+      <div class="wf-grid wf-grid-20">
+        <div class="wf-block wf-card"><span class="wf-estado stock">En stock</span>Modelo 01<small>Precio</small></div>
+        <div class="wf-block wf-card"><span class="wf-estado agotado">Agotado</span>Modelo 02<small>Precio</small></div>
+        <div class="wf-block wf-card"><span class="wf-estado stock">En stock</span>Modelo 03<small>Precio</small></div>
+        <div class="wf-block wf-card"><span class="wf-estado stock">En stock</span>Modelo 04<small>Precio</small></div>
+        <div class="wf-block wf-card">… (hasta el modelo 20)</div>
+        <div class="wf-block wf-card">…</div>
+      </div>
+
+      <div class="wf-block wf-footer-ref">Footer (Flexbox) — común a todas las páginas ↓</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 03 · DETALLE DE PRODUCTO -->
+  <!-- ============================================================ -->
+  <section class="wf-page" id="wf-producto">
+    <h2 class="wf-page-title">03 · Detalle de producto</h2>
+    <div class="wf-frame">
+
+      <div class="wf-block wf-header">
+        <span class="wf-tag">Header</span>
+        <div class="wf-header-row">
+          <div class="wf-block wf-logo">LOGO</div>
+          <div class="wf-block wf-nav-items">Inicio · Catálogo · Historia · Contacto</div>
+          <div class="wf-block wf-menu-icon">☰</div>
+        </div>
+      </div>
+
+      <div class="wf-producto-main">
+        <div class="wf-block wf-zoom-wrap is-live">
+          <span class="wf-tag">Imagen principal</span>
+          <div class="wf-zoom-demo">Pasa el cursor aquí → scale(1.12)</div>
+        </div>
+        <div class="wf-frame">
+          <div class="wf-block">Nombre · Precio · Rating</div>
+          <div class="wf-block wf-ficha-tecnica">
+            <span class="wf-tag">Ficha técnica</span>
+            <dl>
+              <dt>Material</dt><dd>Acero / Oro</dd>
+              <dt>Dimensiones</dt><dd>40mm</dd>
+              <dt>Peso</dt><dd>120g</dd>
+            </dl>
+          </div>
+          <div class="wf-block">
+            <span class="wf-tag">Personalizar</span>
+            <div>
+              <div class="wf-swatches">
+                <div class="wf-swatch" title="Correa cuero"></div>
+                <div class="wf-swatch" title="Correa acero"></div>
+                <div class="wf-swatch" title="Correa caucho"></div>
+              </div>
+              <p style="margin-top:.5rem;">Grabado personalizado (input simulado)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-block">
+        <span class="wf-tag">Relacionados</span>
+        <div style="width:100%;">
+          <div class="wf-carousel is-live">
+            <div class="wf-block">Relacionado 1</div>
+            <div class="wf-block">Relacionado 2</div>
+            <div class="wf-block">Relacionado 3</div>
+            <div class="wf-block">Relacionado 4</div>
+          </div>
+          <p class="wf-live-note">↔ desliza horizontalmente — scroll-snap real</p>
+        </div>
+      </div>
+
+      <div class="wf-block wf-footer-ref">Footer (Flexbox) — común a todas las páginas ↓</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 04 · HISTORIA -->
+  <!-- ============================================================ -->
+  <section class="wf-page" id="wf-historia">
+    <h2 class="wf-page-title">04 · Historia de la empresa</h2>
+    <div class="wf-frame">
+
+      <div class="wf-block wf-header">
+        <span class="wf-tag">Header</span>
+        <div class="wf-header-row">
+          <div class="wf-block wf-logo">LOGO</div>
+          <div class="wf-block wf-nav-items">Inicio · Catálogo · Historia · Contacto</div>
+          <div class="wf-block wf-menu-icon">☰</div>
+        </div>
+      </div>
+
+      <div class="wf-timeline">
+        <div class="wf-block wf-timeline-item"><span class="wf-year">1990</span>Fundación del taller</div>
+        <div class="wf-block wf-timeline-item"><span class="wf-year">2005</span>Primera colección internacional</div>
+        <div class="wf-block wf-timeline-item"><span class="wf-year">2015</span>Reconocimiento en relojería suiza</div>
+        <div class="wf-block wf-timeline-item"><span class="wf-year">2024</span>Expansión y sostenibilidad</div>
+      </div>
+
+      <div class="wf-block">
+        <span class="wf-tag">Galería mosaico</span>
+        <div style="width:100%;">
+          <div class="wf-mosaic">
+            <div class="wf-block span-2 span-row">Foto 1</div>
+            <div class="wf-block">Foto 2</div>
+            <div class="wf-block">Foto 3</div>
+            <div class="wf-block span-2">Foto 4</div>
+            <div class="wf-block">Foto 5</div>
+            <div class="wf-block">Foto 6</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-block wf-footer-ref">Footer (Flexbox) — común a todas las páginas ↓</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- 05 · CONTACTO -->
+  <!-- ============================================================ -->
+  <section class="wf-page" id="wf-contacto">
+    <h2 class="wf-page-title">05 · Contacto</h2>
+    <div class="wf-frame">
+
+      <div class="wf-block wf-header">
+        <span class="wf-tag">Header</span>
+        <div class="wf-header-row">
+          <div class="wf-block wf-logo">LOGO</div>
+          <div class="wf-block wf-nav-items">Inicio · Catálogo · Historia · Contacto</div>
+          <div class="wf-block wf-menu-icon">☰</div>
+        </div>
+      </div>
+
+      <div class="wf-contacto-grid">
+        <div class="wf-block is-live" style="align-items:stretch;">
+          <span class="wf-tag">Formulario</span>
+          <form class="wf-form" style="width:100%;">
+            <div class="wf-field">
+              <label for="wf-nombre">Nombre *</label>
+              <input id="wf-nombre" type="text" placeholder="Tu nombre" required minlength="2">
+            </div>
+            <div class="wf-field">
+              <label for="wf-correo">Correo *</label>
+              <input id="wf-correo" type="email" placeholder="tu@correo.com" required>
+              <span class="hint">Escribe algo inválido y sal del campo → borde rojo (:invalid / :user-invalid)</span>
+            </div>
+            <div class="wf-field">
+              <label for="wf-tel">Teléfono</label>
+              <input id="wf-tel" type="tel" placeholder="+34 600 000 000">
+            </div>
+            <div class="wf-field">
+              <label for="wf-msg">Mensaje *</label>
+              <textarea id="wf-msg" placeholder="Escribe tu mensaje" required minlength="10"></textarea>
+            </div>
+            <button type="submit" class="wf-submit">Enviar mensaje</button>
+          </form>
+        </div>
+        <div class="wf-frame">
+          <div class="wf-block">Dirección · Teléfono · Horario</div>
+          <div class="wf-block">Redes sociales (iconos)</div>
+        </div>
+      </div>
+
+      <div class="wf-block wf-footer-ref">Footer (Flexbox) — común a todas las páginas ↓</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- FOOTER — demo completa y funcional (Flexbox) -->
+  <!-- ============================================================ -->
+  <footer class="wf-footer">
+    <div class="wf-block"><strong>LuxTime</strong> · © 2026</div>
+    <div class="wf-block">contacto@luxtime.com</div>
+    <div class="wf-block">Desarrollado por <a href="#">[tu nombre / estudio]</a></div>
+  </footer>
+
+</body>
+</html>

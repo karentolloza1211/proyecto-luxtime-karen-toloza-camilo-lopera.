@@ -1,0 +1,87 @@
+/* =============================================================
+   LUXTIME — contacto.css
+   Formulario con validación 100% CSS (:required, :focus,
+   :user-invalid) + información de contacto directo y redes.
+   ============================================================= */
+
+.contacto-intro{ max-width:60ch; margin-bottom:var(--space-6); }
+
+.contacto-grid{
+  display:grid; grid-template-columns:1fr; gap:var(--space-5);
+}
+@media (min-width:1024px){
+  .contacto-grid{ grid-template-columns:1.3fr .7fr; align-items:start; }
+}
+
+/* -------------------- FORMULARIO -------------------- */
+.form{ display:flex; flex-direction:column; gap:var(--space-4); }
+
+.field{ position:relative; display:flex; flex-direction:column; gap:.35rem; }
+.field label{ font-family:var(--f-mono); font-size:.78rem; letter-spacing:.02em; }
+.field label .req{ color:var(--c-gold); }
+
+.field input,
+.field textarea{
+  padding:.7rem .9rem;
+  border:1px solid var(--c-line);
+  border-left:1px solid var(--c-line); /* se sobreescribe abajo si es :required */
+  background:var(--c-paper);
+  font-family:var(--f-body); font-size:.95rem;
+  transition:border-color var(--dur-fast) var(--ease);
+}
+.field textarea{ resize:vertical; min-height:120px; }
+
+/* :required — indicador permanente de campo obligatorio */
+.field input:required,
+.field textarea:required{
+  border-left:3px solid var(--c-gold);
+}
+
+/* :focus */
+.field input:focus,
+.field textarea:focus{
+  border-color:var(--c-blued);
+  outline:none;
+}
+
+/* :user-invalid (con fallback :invalid + :not(:placeholder-shown)) */
+.field input:user-invalid,
+.field textarea:user-invalid,
+.field input:invalid:not(:placeholder-shown),
+.field textarea:invalid:not(:placeholder-shown){
+  border-color:var(--c-error);
+}
+
+/* Válido y ya interactuado → confirmación visual */
+.field input:valid:not(:placeholder-shown),
+.field textarea:valid:not(:placeholder-shown){
+  border-color:var(--c-success);
+}
+
+.field__hint{ font-size:.72rem; color:var(--c-ink-muted); margin:0; }
+.field__hint--error{ display:none; color:var(--c-error); }
+
+.field input:user-invalid ~ .field__hint--default,
+.field input:invalid:not(:placeholder-shown) ~ .field__hint--default,
+.field textarea:user-invalid ~ .field__hint--default,
+.field textarea:invalid:not(:placeholder-shown) ~ .field__hint--default{
+  display:none;
+}
+.field input:user-invalid ~ .field__hint--error,
+.field input:invalid:not(:placeholder-shown) ~ .field__hint--error,
+.field textarea:user-invalid ~ .field__hint--error,
+.field textarea:invalid:not(:placeholder-shown) ~ .field__hint--error{
+  display:block;
+}
+
+.form__note{ font-size:.75rem; color:var(--c-ink-muted); }
+
+/* -------------------- INFO DE CONTACTO -------------------- */
+.contact-info{ display:flex; flex-direction:column; gap:var(--space-4); }
+.contact-info address{ font-style:normal; line-height:1.6; }
+.contact-info .card h3{ font-size:.95rem; margin-bottom:var(--space-2); }
+
+.social-list{
+  display:flex; flex-direction:column; gap:.5rem;
+  font-family:var(--f-mono); font-size:.85rem;
+}
